@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0a0f1c">
+  <title>أذكاري — القرآن والأذكار</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png" sizes="192x192">
+  <style>
+    :root{
+      --bg:#0a0f1c;
+      --card:#11182b;
+      --muted:#7f8bb3;
+      --text:#eef2ff;
+      --accent:#4da3ff;
+      --accent-2:#7c4dff;
+      --success:#22c55e;
+      --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Naskh Arabic UI", "Noto Sans Arabic", "Tajawal", "Cairo", Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(124,77,255,.25), transparent 60%),
+                  radial-gradient(1000px 500px at 20% 120%, rgba(77,163,255,.2), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(to bottom, rgba(10,15,28,.8), rgba(10,15,28,.3));
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .bar{
+      display:flex; align-items:center; gap:.75rem;
+      padding: .9rem 1rem;
+    }
+    .title{font-weight:800; letter-spacing:.5px}
+    .subtitle{color:var(--muted); font-size:.9rem}
+    .spacer{flex:1}
+    button.icon{
+      background:transparent; border:1px solid rgba(255,255,255,.1);
+      color:var(--text); border-radius:14px; padding:.55rem .7rem; cursor:pointer;
+    }
+    button.icon:active{transform:translateY(1px)}
+    main{padding: 1rem; max-width: 980px; margin: 0 auto;}
+    .tabs{
+      display:grid; grid-template-columns: repeat(4, 1fr);
+      gap:.5rem; margin:.5rem 0 1rem;
+    }
+    .tab-btn{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08); color:var(--text);
+      padding:.7rem .8rem; border-radius:14px; cursor:pointer; font-weight:600;
+    }
+    .tab-btn[aria-selected="true"]{
+      background:linear-gradient(180deg, rgba(124,77,255,.4), rgba(77,163,255,.3));
+      border-color: rgba(124,77,255,.5);
+      box-shadow: 0 8px 24px rgba(124,77,255,.25);
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px; padding: 1rem; box-shadow: 0 8px 28px rgba(0,0,0,.25);
+    }
+    .row{display:flex; align-items:center; gap:.75rem; flex-wrap:wrap}
+    .search{
+      display:flex; gap:.5rem; margin:.5rem 0 1rem;
+    }
+    input[type="search"]{
+      flex:1; background:#0c1427; border:1px solid rgba(255,255,255,.08);
+      color:var(--text); padding:.8rem 1rem; border-radius:14px; outline:none;
+    }
+    .pill{
+      border:1px solid rgba(255,255,255,.08); padding:.4rem .65rem;
+      border-radius:999px; font-size:.85rem; color:var(--muted);
+    }
+    .adkar-item{
+      display:grid; gap:.75rem; margin-bottom:.75rem;
+      grid-template-columns: 1fr auto;
+    }
+    .adkar-text{white-space:pre-wrap; line-height:2; font-size:1.1rem}
+    .controls{display:flex; align-items:center; gap:.4rem; flex-wrap:wrap}
+    .btn{
+      background:#0c1427; border:1px solid rgba(255,255,255,.08); color:var(--text);
+      padding:.55rem .8rem; border-radius:12px; cursor:pointer; font-weight:600;
+    }
+    .btn.success{border-color:rgba(34,197,94,.4)}
+    .btn.danger{border-color:rgba(239,68,68,.4)}
+    .counter{min-width:2.8rem; text-align:center; font-weight:700}
+    .ayah{line-height:2.2; margin:.4rem 0; font-size:1.25rem}
+    .surah-card{margin:.75rem 0}
+    .muted{color:var(--muted)}
+    .footer-space{height:64px}
+    .install-banner{
+      position:fixed; bottom:12px; inset-inline:12px;
+      display:none; z-index:50;
+    }
+    .install-banner .inner{
+      display:flex; align-items:center; gap:.75rem; justify-content:space-between;
+    }
+    .install-banner .inner .actions{display:flex; gap:.5rem}
+    @media (max-width:720px){
+      .tabs{grid-template-columns: repeat(2, 1fr)}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div>
+        <div class="title">أذكاري</div>
+        <div class="subtitle" id="todayLabel">—</div>
+      </div>
+      <span class="spacer"></span>
+      <button id="toggleTheme" class="icon" aria-label="تبديل النمط">🌓</button>
+      <button id="installBtnHeader" class="icon" aria-label="تثبيت التطبيق" hidden>⬇️ تثبيت</button>
+    </div>
+    <div class="bar">
+      <div class="tabs" role="tablist" aria-label="الأقسام">
+        <button class="tab-btn" role="tab" aria-selected="true" data-tab="sabah">الصباح</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="masaa">المساء</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="quran">القرآن</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="sebha">المِسْبَحة</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="view-sabah" class="view">
+      <div class="search">
+        <input id="sabahSearch" type="search" placeholder="ابحث في أذكار الصباح…">
+        <span class="pill">يتم الحفظ محليًا ✨</span>
+      </div>
+      <div id="sabahList"></div>
+    </section>
+
+    <section id="view-masaa" class="view" hidden>
+      <div class="search">
+        <input id="masaaSearch" type="search" placeholder="ابحث في أذكار المساء…">
+        <span class="pill">عدّاد وتقدم يومي</span>
+      </div>
+      <div id="masaaList"></div>
+    </section>
+
+    <section id="view-quran" class="view" hidden>
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <div class="row">
+            <strong>القرآن الكريم</strong>
+            <span class="pill" id="surahCount"></span>
+          </div>
+          <div class="row">
+            <button class="btn" id="smaller">A-</button>
+            <span class="pill" id="fontScaleLabel">100%</span>
+            <button class="btn" id="bigger">A+</button>
+          </div>
+        </div>
+        <div class="search">
+          <input id="quranSearch" type="search" placeholder="ابحث عن سورة…">
+        </div>
+        <div id="quranList"></div>
+      </div>
+    </section>
+
+    <section id="view-sebha" class="view" hidden>
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <strong>المِسْبَحة</strong>
+          <span class="pill muted">الهاتف يهتز عند العدّ</span>
+        </div>
+        <div style="display:grid; place-items:center; margin:1rem 0">
+          <div id="sebhaCount" style="font-size:3rem; font-weight:900">0</div>
+        </div>
+        <div class="row" style="justify-content:center">
+          <button class="btn success" id="sebhaPlus">تسبيح</button>
+          <button class="btn" id="sebhaSet33">33</button>
+          <button class="btn" id="sebhaSet100">100</button>
+          <button class="btn danger" id="sebhaReset">تصفير</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-space"></div>
+  </main>
+
+  <div class="install-banner" id="installBanner">
+    <div class="card inner">
+      <div>
+        <div class="title" style="font-size:1rem">ثبّت أذكاري كتطبيق</div>
+        <div class="subtitle">يعمل دون إنترنت • خفيف وسريع</div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="installBtn">تثبيت</button>
+        <button class="btn danger" id="dismissInstall">لاحقًا</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // --- Utilities & State ---
+  const $ = (s, p=document) => p.querySelector(s);
+  const $$ = (s, p=document) => [...p.querySelectorAll(s)];
+  const state = {
+    theme: localStorage.getItem('theme') || 'dark',
+    fontScale: parseFloat(localStorage.getItem('fontScale') || '1'),
+    progress: JSON.parse(localStorage.getItem('progress') || '{}'), // {id: countDone}
+    sebha: parseInt(localStorage.getItem('sebha') || '0', 10),
+  };
+  document.documentElement.dataset.theme = state.theme;
+
+  function saveProgress(){ localStorage.setItem('progress', JSON.stringify(state.progress)); }
+  function saveFont(){ localStorage.setItem('fontScale', String(state.fontScale)); }
+  function saveSebha(){ localStorage.setItem('sebha', String(state.sebha)); }
+
+  // --- Date label ---
+  const d = new Date();
+  const fmt = new Intl.DateTimeFormat('ar', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  $('#todayLabel').textContent = fmt.format(d);
+
+  // --- Tabs ---
+  $$('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      $$('.tab-btn').forEach(b => b.setAttribute('aria-selected', 'false'));
+      btn.setAttribute('aria-selected', 'true');
+      const tab = btn.dataset.tab;
+      $$('.view').forEach(v => v.hidden = true);
+      $('#view-' + tab).hidden = false;
+    });
+  });
+
+  // --- Theme toggle ---
+  $('#toggleTheme').addEventListener('click', () => {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = state.theme;
+    if(state.theme === 'light'){
+      document.documentElement.style.setProperty('--bg', '#f6f7fb');
+      document.documentElement.style.setProperty('--card', '#ffffff');
+      document.documentElement.style.setProperty('--text', '#0a0f1c');
+      document.documentElement.style.setProperty('--muted', '#51607a');
+    } else {
+      document.documentElement.style.setProperty('--bg', '#0a0f1c');
+      document.documentElement.style.setProperty('--card', '#11182b');
+      document.documentElement.style.setProperty('--text', '#eef2ff');
+      document.documentElement.style.setProperty('--muted', '#7f8bb3');
+    }
+    localStorage.setItem('theme', state.theme);
+  });
+
+  // --- Install PWA ---
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    $('#installBanner').style.display = 'block';
+    $('#installBtnHeader').hidden = false;
+  });
+  function triggerInstall(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.finally(() => {
+      $('#installBanner').style.display = 'none';
+      deferredPrompt = null;
+    });
+  }
+  $('#installBtn').addEventListener('click', triggerInstall);
+  $('#installBtnHeader').addEventListener('click', triggerInstall);
+  $('#dismissInstall').addEventListener('click', () => $('#installBanner').style.display = 'none');
+
+  // --- Load Data ---
+  let ADHKAR = {sabah:[], masaa:[]};
+  let QURAN = {surahs:[]};
+
+  async function loadAll(){
+    const [ad, q] = await Promise.all([
+      fetch('data/adhkar.json').then(r => r.json()).catch(()=>({sabah:[],masaa:[]})),
+      fetch('data/quran.json').then(r => r.json()).catch(()=>({surahs:[]})),
+    ]);
+    ADHKAR = ad;
+    QURAN = q;
+    renderAdhkar('sabah', $('#sabahList'), $('#sabahSearch'));
+    renderAdhkar('masaa', $('#masaaList'), $('#masaaSearch'));
+    renderQuran();
+  }
+
+  function renderAdhkar(kind, container, searchInput){
+    const items = ADHKAR[kind] || [];
+    function draw(){
+      const q = (searchInput.value || '').trim();
+      const list = q ? items.filter(i => i.text.includes(q)) : items;
+      container.innerHTML = '';
+      list.forEach(it => {
+        const current = state.progress[it.id] || 0;
+        const need = it.repeat || 1;
+        const done = current >= need;
+        const wrap = document.createElement('div');
+        wrap.className = 'card adkar-item';
+        wrap.innerHTML = `
+          <div class="adkar-text" style="font-size:${(1.1*state.fontScale).toFixed(2)}rem">${it.text}</div>
+          <div class="controls">
+            <span class="pill">التكرار: ${need}</span>
+            <span class="pill counter" id="c-${it.id}">${Math.min(current, need)}</span>
+            <button class="btn success" id="inc-${it.id}">+1</button>
+            <button class="btn" id="share-${it.id}">مشاركة</button>
+            <button class="btn danger" id="reset-${it.id}">إعادة</button>
+          </div>
+          <div class="muted">${it.ref || ''}</div>
+        `;
+        container.appendChild(wrap);
+
+        $('#inc-' + it.id, wrap).addEventListener('click', () => {
+          state.progress[it.id] = Math.min((state.progress[it.id] || 0) + 1, need);
+          $('#c-' + it.id, wrap).textContent = state.progress[it.id];
+          if(navigator.vibrate) navigator.vibrate(10);
+          saveProgress();
+        });
+        $('#reset-' + it.id, wrap).addEventListener('click', () => {
+          state.progress[it.id] = 0;
+          $('#c-' + it.id, wrap).textContent = 0;
+          saveProgress();
+        });
+        $('#share-' + it.id, wrap).addEventListener('click', async () => {
+          const text = it.text + "\n\n— من تطبيق أذكاري";
+          if(navigator.share){ try{ await navigator.share({text}); } catch(e){} }
+          else {
+            await navigator.clipboard.writeText(text);
+            alert('نُسِخ الذكر إلى الحافظة ✔︎');
+          }
+        });
+      });
+    }
+    draw();
+    searchInput.addEventListener('input', draw);
+  }
+
+  // --- Quran ---
+  function renderQuran(){
+    const container = $('#quranList');
+    const search = $('#quranSearch');
+    const label = $('#surahCount');
+    let filtered = QURAN.surahs;
+    label.textContent = `${QURAN.surahs.length} سورة`;
+
+    function draw(){
+      const q = (search.value || '').trim();
+      filtered = q ? QURAN.surahs.filter(s => s.name.includes(q)) : QURAN.surahs;
+      container.innerHTML = '';
+      filtered.forEach(surah => {
+        const card = document.createElement('div');
+        card.className = 'card surah-card';
+        card.innerHTML = `
+          <div class="row" style="justify-content:space-between; margin-bottom:.5rem">
+            <strong>${surah.name}</strong>
+            <span class="pill">${surah.number}</span>
+          </div>
+          <div>${surah.ayahs.map(a => `<div class="ayah" style="font-size:${(1.25*state.fontScale).toFixed(2)}rem">${a}</div>`).join('')}</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    draw();
+    search.addEventListener('input', draw);
+
+    // Font controls
+    function updateLabel(){
+      $('#fontScaleLabel').textContent = Math.round(state.fontScale*100) + '%';
+    }
+    $('#bigger').addEventListener('click', () => { state.fontScale = Math.min(2, state.fontScale + 0.05); updateLabel(); saveFont(); draw(); });
+    $('#smaller').addEventListener('click', () => { state.fontScale = Math.max(0.8, state.fontScale - 0.05); updateLabel(); saveFont(); draw(); });
+    updateLabel();
+  }
+
+  // --- Sebha ---
+  function renderSebha(){
+    const out = $('#sebhaCount');
+    const set = v => { state.sebha = Math.max(0, v|0); out.textContent = state.sebha; saveSebha(); };
+    out.textContent = state.sebha;
+    $('#sebhaPlus').addEventListener('click', () => {
+      set(state.sebha + 1);
+      if(navigator.vibrate) navigator.vibrate(15);
+    });
+    $('#sebhaReset').addEventListener('click', () => set(0));
+    $('#sebhaSet33').addEventListener('click', () => set(33));
+    $('#sebhaSet100').addEventListener('click', () => set(100));
+  }
+
+  // --- Service Worker ---
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', ()=>{
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+
+  // Init
+  renderSebha();
+  loadAll();
+</script>
+</body>
+</html>
