@@ -1,5 +1,5 @@
 // Simple cache-first service worker for offline support
-const CACHE = 'adhkari-v1';
+const CACHE = 'adhkari-v3';
 const ASSETS = [
   './',
   './index.html',

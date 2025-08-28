@@ -308,7 +308,7 @@
   async function loadAll(){
     const [ad, q] = await Promise.all([
       fetch('data/adhkar.json').then(r => r.json()).catch(()=>({sabah:[],masaa:[]})),
-      fetch('data/quran.json').then(r => r.json()).catch(()=>({surahs:[]})),
+      fetch('data/quran.json?v='+ (localStorage.getItem('qv')||'1')).then(r => r.json()).catch(()=>({surahs:[]})),
     ]);
     ADHKAR = ad;
     QURAN = q;
