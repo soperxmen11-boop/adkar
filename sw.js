@@ -60,3 +60,22 @@ self.addEventListener('fetch', event => {
     );
   }
 });
+
+
+// Runtime caching for Quran API (api.alquran.cloud)
+self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+  if (event.request.method === 'GET' && url.hostname.includes('api.alquran.cloud')) {
+    event.respondWith(
+      caches.open(CACHE).then(async cache => {
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+        try {
+          const resp = await fetch(event.request);
+          cache.put(event.request, resp.clone());
+          return resp;
+        } catch(e){ return new Response(JSON.stringify({surahs:[]}), {status:200}); }
+      })
+    );
+  }
+});

@@ -305,7 +305,7 @@
   async function loadAll(){
     const [ad, q] = await Promise.all([
       fetch('data/adhkar.json').then(r => r.json()).catch(()=>({sabah:[],masaa:[]})),
-      fetch('data/quran.json').then(r => r.json()).catch(()=>({surahs:[]})),
+      fetch('https://api.alquran.cloud/v1/quran/quran-uthmani').then(r=>r.json()).then(j=>({surahs:(j.data?.surahs||[]).map(s=>({number:s.number,name:s.name,ayahs:s.ayahs.map(a=>a.text)}))})).catch(()=>({surahs:[]})),
     ]);
     ADHKAR = ad;
     QURAN = q;
@@ -374,7 +374,7 @@
 
     function draw(){
       const q = (search.value || '').trim();
-      filtered = q ? QURAN.surahs.filter(s => s.name.includes(q)) : QURAN.surahs;
+      filtered = q ? QURAN.surahs.filter(s => s.name.includes(q) || String(s.number)===q) : QURAN.surahs;
       container.innerHTML = '';
       filtered.forEach(surah => {
         const card = document.createElement('div'); card.className = 'card surah-card'; card.innerHTML = `
