@@ -43,12 +43,12 @@ self.addEventListener('fetch', e => {
 });
 
 
-/* Runtime caching for audio (origin cdn.islamic.network) */
+/* Runtime caching for audio (cdn.islamic.network) */
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method === 'GET' && url.hostname.includes('islamic.network')) {
     event.respondWith(
-      caches.open(CACHE).then(async cache => {
+      caches.open('adhkari-v1').then(async cache => {
         const cached = await cache.match(event.request);
         if (cached) return cached;
         try {
@@ -56,25 +56,6 @@ self.addEventListener('fetch', event => {
           cache.put(event.request, resp.clone());
           return resp;
         } catch(e){ return new Response('', {status:504}); }
-      })
-    );
-  }
-});
-
-
-// Runtime caching for Quran API (api.alquran.cloud)
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  if (event.request.method === 'GET' && url.hostname.includes('api.alquran.cloud')) {
-    event.respondWith(
-      caches.open(CACHE).then(async cache => {
-        const cached = await cache.match(event.request);
-        if (cached) return cached;
-        try {
-          const resp = await fetch(event.request);
-          cache.put(event.request, resp.clone());
-          return resp;
-        } catch(e){ return new Response(JSON.stringify({surahs:[]}), {status:200}); }
       })
     );
   }
