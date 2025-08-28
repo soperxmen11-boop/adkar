@@ -1,5 +1,5 @@
 // Simple cache-first service worker for offline support
-const CACHE = 'adhkari-v3';
+const CACHE = 'adhkari-v9';
 const ASSETS = [
   './',
   './index.html',
@@ -40,23 +40,4 @@ self.addEventListener('fetch', e => {
       });
     })
   );
-});
-
-
-/* Runtime caching for audio (cdn.islamic.network) */
-self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  if (event.request.method === 'GET' && url.hostname.includes('islamic.network')) {
-    event.respondWith(
-      caches.open('adhkari-v1').then(async cache => {
-        const cached = await cache.match(event.request);
-        if (cached) return cached;
-        try {
-          const resp = await fetch(event.request, {mode:'cors'});
-          cache.put(event.request, resp.clone());
-          return resp;
-        } catch(e){ return new Response('', {status:504}); }
-      })
-    );
-  }
 });

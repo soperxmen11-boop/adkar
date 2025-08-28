@@ -107,16 +107,6 @@
     @media (max-width:720px){
       .tabs{grid-template-columns: repeat(2, 1fr)}
     }
-  
-    /* Pro polish */
-    .btn{ position:relative; overflow:hidden }
-    .btn::after{ content:''; position:absolute; inset:0; opacity:0; background:currentColor; transform:scale(.2); transition:opacity .25s, transform .25s; mix-blend-mode:soft-light }
-    .btn:active::after{ opacity:.15; transform:scale(1) }
-    progress { width:100%; height:14px; border:none; border-radius:999px; background:#0c1427 }
-    progress::-webkit-progress-bar{ background:#0c1427; border-radius:999px }
-    progress::-webkit-progress-value{ border-radius:999px; background:linear-gradient(90deg, var(--accent, #4da3ff), var(--accent-2, #7c4dff)) }
-    .surah-card .muted-box{ background:#0c1427; border:1px dashed rgba(255,255,255,.15); border-radius:12px; padding:.75rem; color:var(--muted) }
-
   </style>
 </head>
 <body>
@@ -131,18 +121,11 @@
       <button id="installBtnHeader" class="icon" aria-label="تثبيت التطبيق" hidden>⬇️ تثبيت</button>
     </div>
     <div class="bar">
-      <div class="row" style="gap:.5rem;flex-wrap:wrap;margin-bottom:.5rem">
-  <label class="pill" style="background:transparent;border:none;padding:0">المظهر</label>
-  <select id="themeSelect" class="btn" style="padding:.55rem .8rem;border-radius:12px"></select>
-  <label class="pill" style="background:transparent;border:none;padding:0">القارئ</label>
-  <select id="reciterSelect" class="btn" style="padding:.55rem .8rem;border-radius:12px"></select>
-</div>
-<div class="tabs" role="tablist" aria-label="الأقسام">
+      <div class="tabs" role="tablist" aria-label="الأقسام">
         <button class="tab-btn" role="tab" aria-selected="true" data-tab="sabah">الصباح</button>
         <button class="tab-btn" role="tab" aria-selected="false" data-tab="masaa">المساء</button>
         <button class="tab-btn" role="tab" aria-selected="false" data-tab="quran">القرآن</button>
         <button class="tab-btn" role="tab" aria-selected="false" data-tab="sebha">المِسْبَحة</button>
-        <button class="tab-btn" role="tab" aria-selected="false" data-tab="saved">محفوظاتي</button>
       </div>
     </div>
   </header>
@@ -167,7 +150,6 @@
     <section id="view-quran" class="view" hidden>
       <div class="card">
         <div class="row" style="justify-content:space-between">
-          <button class="btn" id="importQuranBtn">⬆️ استيراد القرآن (JSON)</button>
           <div class="row">
             <strong>القرآن الكريم</strong>
             <span class="pill" id="surahCount"></span>
@@ -188,7 +170,6 @@
     <section id="view-sebha" class="view" hidden>
       <div class="card">
         <div class="row" style="justify-content:space-between">
-          <button class="btn" id="importQuranBtn">⬆️ استيراد القرآن (JSON)</button>
           <strong>المِسْبَحة</strong>
           <span class="pill muted">الهاتف يهتز عند العدّ</span>
         </div>
@@ -201,17 +182,6 @@
           <button class="btn" id="sebhaSet100">100</button>
           <button class="btn danger" id="sebhaReset">تصفير</button>
         </div>
-      </div>
-    </section>
-
-    <section id="view-saved" class="view" hidden>
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <button class="btn" id="importQuranBtn">⬆️ استيراد القرآن (JSON)</button>
-          <strong>محفوظاتي</strong>
-          <span class="pill muted">يتم حفظها محليًا</span>
-        </div>
-        <div id="savedList"></div>
       </div>
     </section>
 
@@ -308,7 +278,7 @@
   async function loadAll(){
     const [ad, q] = await Promise.all([
       fetch('data/adhkar.json').then(r => r.json()).catch(()=>({sabah:[],masaa:[]})),
-      fetch('data/quran.json?v='+ (localStorage.getItem('qv')||'1')).then(r => r.json()).catch(()=>({surahs:[]})),
+      fetch('data/quran.json').then(r => r.json()).catch(()=>({surahs:[]})),
     ]);
     ADHKAR = ad;
     QURAN = q;
@@ -368,7 +338,6 @@
   }
 
   // --- Quran ---
-  
   function renderQuran(){
     const container = $('#quranList');
     const search = $('#quranSearch');
@@ -378,67 +347,21 @@
 
     function draw(){
       const q = (search.value || '').trim();
-      filtered = q ? QURAN.surahs.filter(s => s.name.includes(q) || String(s.number)===q) : QURAN.surahs;
+      filtered = q ? QURAN.surahs.filter(s => s.name.includes(q)) : QURAN.surahs;
       container.innerHTML = '';
       filtered.forEach(surah => {
         const card = document.createElement('div');
         card.className = 'card surah-card';
-        const hasText = Array.isArray(surah.ayahs) && surah.ayahs.length > 0;
         card.innerHTML = `
           <div class="row" style="justify-content:space-between; margin-bottom:.5rem">
             <strong>${surah.name}</strong>
-            <span class="pill">سورة ${surah.number}</span>
+            <span class="pill">${surah.number}</span>
           </div>
-          <div class="row" style="gap:.5rem; margin:.25rem 1px 1rem">
-            <button class="btn" data-play="${surah.number}">▶️ تشغيل</button>
-            <button class="btn" data-dl="${surah.number}">⬇️ تنزيل</button>
-            <button class="btn" data-bm="${surah.number}">⭐ حفظ</button>
-          </div>
-          ${hasText ? `<div>${surah.ayahs.map((a,i)=>`<div class='ayah' data-idx='${i+1}' style='font-size:${(1.25*state.fontScale).toFixed(2)}rem'>${a}</div>`).join('')}</div>`
-                     : `<div class='muted-box'>نص السورة غير مثبّت. اطلع على <strong>readme</strong> داخل المشروع لكيفية تثبيت حِزمة النصوص للأوفلاين.</div>`}
+          <div>${surah.ayahs.map(a => `<div class="ayah" style="font-size:${(1.25*state.fontScale).toFixed(2)}rem">${a}</div>`).join('')}</div>
         `;
         container.appendChild(card);
-
-        // Play/pause
-        let audio;
-        card.querySelector('[data-play]').addEventListener('click', (e) => {
-          if(!audio){ audio = new Audio(audioUrlForSurah(surah.number)); }
-          if(audio.paused){ audio.play(); e.target.textContent='⏸️ إيقاف مؤقت'; }
-          else{ audio.pause(); e.target.textContent='▶️ تشغيل'; }
-        });
-        // Download for offline
-        card.querySelector('[data-dl]').addEventListener('click', () => prefetchAudio(surah.number));
-        // Bookmark surah
-        card.querySelector('[data-bm]').addEventListener('click', () => {
-          const s = store.saved;
-          if(!s.find(x=>x.type==='surah' && x.number===surah.number)){
-            s.push({type:'surah', number:surah.number, name:surah.name, t:Date.now()});
-            store.saved = s; renderSaved();
-          }
-        });
-        // Khatma marking if text exists
-        if(hasText){
-          card.querySelectorAll('.ayah').forEach(el => {
-            el.addEventListener('click', () => {
-              const idx = parseInt(el.dataset.idx, 10);
-              store.khatma = {surah: surah.number, ayah: idx};
-              el.style.outline = '2px solid var(--accent)'; setTimeout(()=> el.style.outline='none', 350);
-            });
-            el.addEventListener('contextmenu', (e) => {
-              e.preventDefault();
-              const idx = parseInt(el.dataset.idx, 10);
-              const s = store.saved;
-              s.push({type:'ayah', number:surah.number, name:surah.name, ayah:idx, text:el.textContent, t:Date.now()});
-              store.saved = s; renderSaved();
-              alert('تم حفظ الآية ✔︎');
-            });
-          });
-        }
       });
     }
-    draw();
-    search.addEventListener('input', draw);
-  }
     draw();
     search.addEventListener('input', draw);
 
@@ -472,125 +395,9 @@
     });
   }
 
-  
-  // --- Themes ---
-  const THEMES = {
-    'داكن': {bg:'#0a0f1c', card:'#11182b', text:'#eef2ff', muted:'#7f8bb3', accent:'#4da3ff', accent2:'#7c4dff'},
-    'أزرق فاتح': {bg:'#eaf2ff', card:'#ffffff', text:'#0a0f1c', muted:'#56637f', accent:'#2563eb', accent2:'#7c4dff'},
-    'أخضر': {bg:'#0b1510', card:'#0f1f17', text:'#e8fff2', muted:'#86b5a0', accent:'#22c55e', accent2:'#16a34a'}
-  };
-  const themeSelect = $('#themeSelect');
-  if(themeSelect){
-    Object.keys(THEMES).forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; themeSelect.appendChild(o); });
-    themeSelect.value = localStorage.getItem('themeName') || 'داكن';
-    function applyTheme(n){ const t = THEMES[n]||THEMES['داكن'];
-      document.documentElement.style.setProperty('--bg', t.bg);
-      document.documentElement.style.setProperty('--card', t.card);
-      document.documentElement.style.setProperty('--text', t.text);
-      document.documentElement.style.setProperty('--muted', t.muted);
-      document.documentElement.style.setProperty('--accent', t.accent);
-      document.documentElement.style.setProperty('--accent-2', t.accent2);
-      localStorage.setItem('themeName', n);
-    }
-    applyTheme(themeSelect.value);
-    themeSelect.addEventListener('change', e => applyTheme(e.target.value));
-  }
-
-  // --- Reciters ---
-  const RECITERS = {
-    'العفاسي 128kbps': {id:'ar.alafasy'},
-    'السديس 128kbps': {id:'ar.abdurrahmaansudais'},
-    'المعيقلي 128kbps': {id:'ar.mahermuaiqly'}
-  };
-  const reciterSelect = $('#reciterSelect');
-  if(reciterSelect){
-    Object.keys(RECITERS).forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; reciterSelect.appendChild(o); });
-    reciterSelect.value = localStorage.getItem('reciterName') || 'العفاسي 128kbps';
-    reciterSelect.addEventListener('change', e => localStorage.setItem('reciterName', e.target.value));
-  }
-  function audioUrlForSurah(num){
-    const name = localStorage.getItem('reciterName') || 'العفاسي 128kbps';
-    const r = RECITERS[name];
-    return `https://cdn.islamic.network/quran/audio/128/${r.id}/${num}.mp3`;
-  }
-
-  // --- Bookmarks & Khatma ---
-  const store = {
-    get saved(){ return JSON.parse(localStorage.getItem('saved') || '[]'); },
-    set saved(v){ localStorage.setItem('saved', JSON.stringify(v)); },
-    get khatma(){ return JSON.parse(localStorage.getItem('khatma') || '{"surah":1,"ayah":1}'); },
-    set khatma(v){ localStorage.setItem('khatma', JSON.stringify(v)); },
-  };
-
-  function renderSaved(){
-    const list = $('#savedList'); if(!list) return;
-    const s = store.saved.sort((a,b)=>b.t-a.t);
-    list.innerHTML = s.length? '' : '<div class="muted">لا توجد عناصر محفوظة بعد.</div>';
-    s.forEach(item => {
-      const div = document.createElement('div'); div.className='card'; div.style.margin='.5rem 0';
-      if(item.type==='surah'){
-        div.innerHTML = `<div class="row" style="justify-content:space-between">
-          <button class="btn" id="importQuranBtn">⬆️ استيراد القرآن (JSON)</button><strong>سورة ${item.name}</strong><button class="btn">حذف</button></div>`;
-      }else{
-        div.innerHTML = `<div class="row" style="justify-content:space-between">
-          <button class="btn" id="importQuranBtn">⬆️ استيراد القرآن (JSON)</button><strong>سورة ${item.name} • آية ${item.ayah}</strong><button class="btn">حذف</button></div><div class="ayah" style="margin-top:.5rem">${item.text||''}</div>`;
-      }
-      div.querySelector('button.btn').addEventListener('click', () => {
-        const all = store.saved; const idx = all.findIndex(x => x.t === item.t);
-        if(idx>-1){ all.splice(idx,1); store.saved = all; renderSaved(); }
-      });
-      list.appendChild(div);
-    });
-  }
-
-  // Prefetch audio for offline
-  async function prefetchAudio(num){
-    if(!('caches' in window)) return;
-    const url = audioUrlForSurah(num);
-    const cache = await caches.open('adhkari-v1');
-    try{
-      const resp = await fetch(url, {mode:'no-cors'});
-      await cache.put(url, resp.clone());
-      alert('تم تنزيل السورة للأوفلاين ✔︎');
-    }catch(e){ alert('تعذر التنزيل الآن'); }
-  }
-
-  
-  // --- In-app Quran JSON importer ---
-  const importBtn = $('#importQuranBtn');
-  const fileInput = $('#quranFileInput');
-  if(importBtn && fileInput){
-    importBtn.addEventListener('click', ()=> fileInput.click());
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if(!file) return;
-      try{
-        const text = await file.text();
-        JSON.parse(text); // validate
-        if(!('caches' in window)) throw new Error('no caches');
-        const cache = await caches.open('adhkari-v1');
-        const req = new Request('./data/quran.json');
-        const resp = new Response(text, {headers:{'Content-Type':'application/json'}});
-        await cache.put(req, resp);
-        localStorage.setItem('hasOfflineQuran','1');
-        alert('تم استيراد القرآن للأوفلاين ✔︎');
-        // re-fetch and rerender
-        const d = await fetch('./data/quran.json').then(r=>r.json());
-        QURAN = d;
-        $('#surahCount').textContent = `${QURAN.surahs.length} سورة`;
-        renderQuran();
-      }catch(err){
-        alert('ملف غير صالح.');
-      }finally{
-        e.target.value = '';
-      }
-    });
-  }
-
   // Init
   renderSebha();
   loadAll();
 </script>
-<input type="file" id="quranFileInput" accept="application/json" hidden>
 </body>
 </html>
